@@ -29,7 +29,6 @@ model Event {
   elementId   String?   @db.Text
   eventId   String    @db.Uuid
 
-  pageUrl        String    @db.Text
   host        String    @db.Text
   path        String?   @db.Text
   refferUrl   String?   @db.Text

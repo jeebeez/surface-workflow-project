@@ -64,8 +64,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const recordsToCreate: Array<Prisma.EventCreateManyInput> = [];
 
     for (const ev of body.events) {
-      const type = ev.type.toUpperCase();
-      if (!Object.values(EventType).includes(type as EventType)) {
+      const type = ev.type.toUpperCase() as EventType;
+      if (!Object.values(EventType).includes(type)) {
         return createJsonResponse(
           { error: `Invalid event type: ${ev.type}` },
           422,
@@ -83,18 +83,18 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
           headers,
         );
       }
-
       const metadata: Record<string, string> = {};
-      if (ev.userId) metadata.userId = ev.userId;
-      if (ev.elementId) metadata.elementId = ev.elementId;
+      if (ev.userId && type === EventType.IDENTITY) metadata.userId = ev.userId;
+      if (type === EventType.CLICK && ev.elementId)
+        metadata.elementId = ev.elementId;
+      if (type === EventType.PAGE) metadata.pageUrl = ev.pageUrl;
 
       const createItem = {
         workspaceId: body.workspaceId,
-        type: type as EventType,
+        type,
         visitorId: ev.visitorId,
         elementId: ev.elementId ?? null,
         eventId: ev.eventId,
-        pageUrl: ev.pageUrl,
         host: url.hostname,
         path: url.pathname || null,
         refferUrl: ev.refferUrl ?? null,
