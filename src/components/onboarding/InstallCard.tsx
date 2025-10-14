@@ -2,20 +2,23 @@
 
 import { useMemo, useState } from "react";
 import { Button } from "~/components/ui/button";
-import { copyToClipboard } from "~/lib/clipboard";
+import { CopyToClipboardButton } from "~/lib/clipboard";
 import { AlertWrapper } from "~/components/ui/alert-wrapper";
 import {
   CheckCircleIcon,
   ExclamationCircleIcon,
   InformationCircleIcon,
 } from "@heroicons/react/20/solid";
-import { CollapsibleCard } from "~/components/ui/CollapsibleCard";
+import { CollapsibleCard } from "~/components/onboarding/CollapsibleCard";
+import { tagSnippet } from "~/lib/const";
 
 enum TestStatus {
   PASSED = "PASSED",
   CHECKING = "CHECKING",
   ERROR = "ERROR",
 }
+const endpoint =
+  process.env.NEXT_PUBLIC_EVENTS_API_URL ?? "http://localhost:3000/api/events";
 
 export default function InstallCard({
   workspaceId,
@@ -26,23 +29,7 @@ export default function InstallCard({
 }) {
   const [testStatus, setTestStatus] = useState<TestStatus>();
 
-  const snippet = useMemo(() => {
-    return `<script>
-  (function(w, d, s, l, t) {
-    w[l] = w[l] || [];
-    w[l].push({
-      'surface.start': new Date().getTime(),
-      event: 'surface.js'
-    });
-    var f = d.getElementsByTagName(s)[0],
-      j = d.createElement(s),
-      dl = l != 'surface' ? '&l=' + l : '';
-    j.async = true;
-    j.src = 'https://www.surface-analytics.com/tag.js?id=' + t + dl;
-    f.parentNode.insertBefore(j, f);
-  })(window, document, 'script', 'surface', 'SURFACE_TAG_ID');
-</script>`;
-  }, []);
+  const snippet = tagSnippet(workspaceId, endpoint);
 
   async function verify() {
     if (testStatus === TestStatus.PASSED) {
@@ -84,16 +71,15 @@ export default function InstallCard({
     >
       <div className="space-y-4">
         <div className="relative w-full rounded-lg border bg-zinc-50 p-4">
-          <Button
-            className="absolute top-4 right-4"
-            variant="default"
-            onClick={() => copyToClipboard(snippet)}
-            size="sm"
-          >
-            Copy Snippet
-          </Button>
+          <div className="absolute top-4 right-4">
+            <CopyToClipboardButton
+              text={snippet}
+              copyText="Copy Snippet"
+              copiedText="Copied!"
+            />
+          </div>
 
-          <pre className="pr-20 font-mono text-xs leading-relaxed">
+          <pre className="max-h-80 overflow-y-auto pr-20 font-mono text-xs leading-relaxed">
             {snippet.split("\n").map((line, i) => (
               <div key={i} className="flex">
                 <span className="mr-4 inline-block w-8 text-right text-gray-400 select-none">

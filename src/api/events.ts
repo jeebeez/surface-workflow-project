@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "./axiosInstance";
+import { PAGE_SIZE } from "~/lib/const";
 
 interface EventData {
   id: string;
@@ -27,7 +28,7 @@ export const useEvents = (
     queryKey: ["events", workspaceId],
     queryFn: async () => {
       const { data } = await axiosInstance.get<EventsResponse>(
-        `/api/dashboard/events?workspaceId=${encodeURIComponent(workspaceId!)}&limit=100&offset=0`,
+        `/api/dashboard/events?workspaceId=${encodeURIComponent(workspaceId!)}&limit=${PAGE_SIZE}&offset=0`,
       );
       return data;
     },

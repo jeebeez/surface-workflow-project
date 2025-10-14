@@ -10,11 +10,36 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-model Post {
-    id        Int      @id @default(autoincrement())
-    name      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+enum EventType {
+    TRACK
+    PAGE
+    IDENTITY
+    CLICK
+    }
 
-    @@index([name])
+model Event {
+  id          String    @id @db.Uuid @default(uuid(7))
+  workspaceId String    @db.Text
+
+//   not in scope for now
+//   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  type        EventType
+  visitorId   String    @db.Uuid
+  elementId   String?   @db.Text
+  eventId   String    @db.Uuid
+
+  pageUrl        String    @db.Text
+  host        String    @db.Text
+  path        String?   @db.Text
+  refferUrl   String?   @db.Text
+
+  receivedAt  DateTime  @default(now()) @db.Timestamptz(6)
+  occurredAt     DateTime? @db.Timestamptz(6)
+  metadata    Json?
+
+
+  @@index([workspaceId, receivedAt])
+  @@unique([workspaceId, eventId])
+  // add more indexes later when we allow filtering by other fields
 }
