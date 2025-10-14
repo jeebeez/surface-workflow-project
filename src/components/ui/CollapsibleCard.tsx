@@ -1,14 +1,7 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  CardAction,
-} from "~/components/ui/card";
+import { CheckCircleIcon } from "@heroicons/react/20/solid";
+import { useEffect, useState, type ReactNode } from "react";
 import { cn } from "~/lib/utils";
 
 interface CollapsibleCardProps {
@@ -18,19 +11,8 @@ interface CollapsibleCardProps {
   children: ReactNode;
   className?: string;
   headerClassName?: string;
-  contentClassName?: string;
-  actionButtonVariant?:
-    | "default"
-    | "destructive"
-    | "outline"
-    | "secondary"
-    | "ghost"
-    | "link";
-  actionButtonSize?: "default" | "sm" | "lg" | "icon";
-  actionButtonDisabled?: boolean;
-  actionButtonLoading?: boolean;
-  actionButtonLoadingText?: string;
   disabled?: boolean;
+  completed?: boolean;
 }
 
 export function CollapsibleCard({
@@ -41,6 +23,7 @@ export function CollapsibleCard({
   headerClassName,
   actionButton,
   disabled,
+  completed,
 }: CollapsibleCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -49,20 +32,40 @@ export function CollapsibleCard({
     setIsExpanded(!isExpanded);
   };
 
-  return (
-    <Card className={className}>
-      <CardHeader
-        className={cn("cursor-pointer", headerClassName)}
-        onClick={handleToggle}
-      >
-        <CardTitle className="flex items-center gap-2">{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
-        {actionButton && !isExpanded && (
-          <CardAction onClick={handleToggle}>{actionButton}</CardAction>
-        )}
-      </CardHeader>
+  useEffect(() => {
+    if (completed) {
+      setIsExpanded(true);
+    }
+  }, [completed]);
 
-      {isExpanded && <CardContent>{children}</CardContent>}
-    </Card>
+  return (
+    <div
+      className={cn(
+        "bg-card text-card-foreground rounded-lg border shadow-sm",
+        className,
+      )}
+    >
+      <div className="flex items-center gap-2 p-6">
+        <CheckCircleIcon
+          className={`h-6 w-6 ${completed ? "text-green-500" : "text-blue-200"}`}
+        />
+        <div
+          className={cn("flex-1 cursor-pointer space-y-1.5", headerClassName)}
+          onClick={handleToggle}
+        >
+          <div>
+            <h3 className="flex items-center gap-2 text-lg leading-none font-semibold tracking-tight">
+              {title}
+            </h3>
+            <p className="text-muted-foreground text-sm">{description}</p>
+          </div>
+        </div>
+        {actionButton && !isExpanded && (
+          <div onClick={handleToggle}>{actionButton}</div>
+        )}
+      </div>
+
+      {isExpanded && <div className="p-6 pt-0">{children}</div>}
+    </div>
   );
 }

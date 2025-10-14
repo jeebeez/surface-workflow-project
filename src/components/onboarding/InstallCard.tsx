@@ -4,7 +4,11 @@ import { useMemo, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { copyToClipboard } from "~/lib/clipboard";
 import { AlertWrapper } from "~/components/ui/alert-wrapper";
-import { CheckCircleIcon } from "@heroicons/react/24/outline";
+import {
+  CheckCircleIcon,
+  ExclamationCircleIcon,
+  InformationCircleIcon,
+} from "@heroicons/react/20/solid";
 import { CollapsibleCard } from "~/components/ui/CollapsibleCard";
 
 enum TestStatus {
@@ -18,7 +22,6 @@ export default function InstallCard({
   onTest,
 }: {
   workspaceId: string;
-  tagUrl: string;
   onTest: (status: boolean) => void;
 }) {
   const [testStatus, setTestStatus] = useState<TestStatus>();
@@ -42,10 +45,14 @@ export default function InstallCard({
   }, []);
 
   async function verify() {
+    if (testStatus === TestStatus.PASSED) {
+      onTest(true);
+      return;
+    }
     try {
       setTestStatus(TestStatus.CHECKING);
       const res = await fetch(
-        `/api/dashboard/events?workspaceId=${encodeURIComponent(workspaceId)}&limit=10`,
+        `/api/dashboard/events?workspaceId=${encodeURIComponent(workspaceId)}&limit=10&offset=0`,
         { cache: "no-store" },
       );
       const json = (await res.json()) as { events?: unknown[] };
@@ -53,7 +60,6 @@ export default function InstallCard({
 
       if (eventCount > 0) {
         setTestStatus(TestStatus.PASSED);
-        onTest(true);
       } else {
         setTestStatus(TestStatus.ERROR);
         onTest(false);
@@ -63,70 +69,88 @@ export default function InstallCard({
       setTestStatus(TestStatus.ERROR);
     }
   }
+  const buttonText = useMemo(() => {
+    if (testStatus === TestStatus.CHECKING) return "Testing…";
+    if (testStatus === TestStatus.PASSED) return "Next Step";
+    return "Test Connection";
+  }, [testStatus]);
 
   return (
     <CollapsibleCard
+      completed={testStatus === TestStatus.PASSED}
       title="Install the Surface Tag"
       description="Enable tracking and analytics."
-      actionButton={<Button>Test connection</Button>}
+      actionButton={<Button>Install Tag</Button>}
     >
-      <div className="relative w-full rounded-lg border bg-zinc-50 p-4">
-        <Button
-          className="absolute top-4 right-4"
-          variant="default"
-          onClick={() => copyToClipboard(snippet)}
-          size="sm"
-        >
-          Copy Snippet
-        </Button>
+      <div className="space-y-4">
+        <div className="relative w-full rounded-lg border bg-zinc-50 p-4">
+          <Button
+            className="absolute top-4 right-4"
+            variant="default"
+            onClick={() => copyToClipboard(snippet)}
+            size="sm"
+          >
+            Copy Snippet
+          </Button>
 
-        <pre className="pr-20 font-mono text-xs leading-relaxed">
-          {snippet.split("\n").map((line, i) => (
-            <div key={i} className="flex">
-              <span className="mr-4 inline-block w-8 text-right text-gray-400 select-none">
-                {i + 1}.
-              </span>
-              <span className="flex-1">{line}</span>
-            </div>
-          ))}
-        </pre>
-      </div>
+          <pre className="pr-20 font-mono text-xs leading-relaxed">
+            {snippet.split("\n").map((line, i) => (
+              <div key={i} className="flex">
+                <span className="mr-4 inline-block w-8 text-right text-gray-400 select-none">
+                  {i + 1}.
+                </span>
+                <span className="flex-1">{line}</span>
+              </div>
+            ))}
+          </pre>
+        </div>
 
-      {/* Status Alerts */}
-      {testStatus === TestStatus.CHECKING && (
-        <AlertWrapper
-          variant="default"
-          icon={<CheckCircleIcon />}
-          title="Checking for Tag..."
-          description="Verifying connection to Surface Analytics..."
-        />
-      )}
+        {testStatus === TestStatus.CHECKING && (
+          <AlertWrapper
+            variant="default"
+            icon={<InformationCircleIcon className="text-blue-500!" />}
+            title="Checking for Tag..."
+          />
+        )}
 
-      {testStatus === TestStatus.PASSED && (
-        <AlertWrapper
-          variant="success"
-          icon={<CheckCircleIcon />}
-          title="Connected successfully!"
-          description="Surface Tag is properly installed and tracking events."
-        />
-      )}
+        {testStatus === TestStatus.PASSED && (
+          <AlertWrapper
+            variant="success"
+            icon={<CheckCircleIcon />}
+            title="Connected successfully!"
+          />
+        )}
 
-      {testStatus === TestStatus.ERROR && (
-        <AlertWrapper
-          variant="destructive"
-          title="Connection failed"
-          description="No events detected. Please ensure the tag is properly installed on your site."
-        />
-      )}
+        {testStatus === TestStatus.ERROR && (
+          <AlertWrapper
+            icon={<ExclamationCircleIcon width={40} />}
+            variant="destructive"
+            title="We couldn’t detect the Surface Tag on your website. Please ensure the snippet is added correctly."
+            description={
+              <ul className="list-inside list-disc text-sm">
+                <li>
+                  Recheck the code snippet to ensure it’s correctly placed
+                  before the closing &lt;/head&gt; tag.
+                </li>
+                <li>
+                  Ensure there are no blockers (like ad blockers) preventing the
+                  script from running.
+                </li>
+                <li>Try again once you’ve made the corrections.</li>
+              </ul>
+            }
+          />
+        )}
 
-      <div className="flex justify-end">
-        <Button
-          onClick={verify}
-          disabled={testStatus === TestStatus.CHECKING}
-          variant="default"
-        >
-          {testStatus === TestStatus.CHECKING ? "Testing…" : "Test connection"}
-        </Button>
+        <div className="flex justify-end">
+          <Button
+            onClick={verify}
+            disabled={testStatus === TestStatus.CHECKING}
+            variant="default"
+          >
+            {buttonText}
+          </Button>
+        </div>
       </div>
     </CollapsibleCard>
   );

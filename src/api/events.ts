@@ -13,21 +13,25 @@ interface EventsResponse {
   events: EventData[];
   pagination?: {
     hasMore: boolean;
-    nextCursor: string | null;
+    nextOffset: number | null;
     limit: number;
+    offset: number;
   };
 }
 
-export const useEvents = (workspaceId: string | undefined) => {
+export const useEvents = (
+  workspaceId: string | undefined,
+  enabled?: boolean,
+) => {
   return useQuery<EventsResponse>({
     queryKey: ["events", workspaceId],
     queryFn: async () => {
       const { data } = await axiosInstance.get<EventsResponse>(
-        `/api/dashboard/events?workspaceId=${encodeURIComponent(workspaceId!)}&limit=100`,
+        `/api/dashboard/events?workspaceId=${encodeURIComponent(workspaceId!)}&limit=100&offset=0`,
       );
       return data;
     },
-    enabled: !!workspaceId,
-    refetchInterval: 2000,
+    enabled,
+    // refetchInterval: 2000,
   });
 };
