@@ -92,14 +92,17 @@ const EventsCard = ({
 
               {!testing &&
                 events.map((e) => (
-                  <TableRow key={e.id}>
-                    <TableCell className="font-medium">
+                  <TableRow
+                    className="text-muted-foreground hover:bg-transparent"
+                    key={e.id}
+                  >
+                    <TableCell className="">
                       {formatEventName(e.type)}
                     </TableCell>
-                    <TableCell className="text-muted-foreground font-mono text-xs">
+                    <TableCell className="max-w-xs truncate font-mono text-xs">
                       {e.visitorId}
                     </TableCell>
-                    <TableCell className="max-w-md truncate font-mono text-xs">
+                    <TableCell className="max-w-xs truncate font-mono text-xs">
                       {JSON.stringify(e.payload)}
                     </TableCell>
                     <TableCell className="text-sm">
