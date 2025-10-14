@@ -10,7 +10,7 @@ import {
   TableHead,
   TableCell,
 } from "~/components/ui/table";
-import { CollapsibleCard } from "~/components/ui/CollapsibleCard";
+import { CollapsibleCard } from "~/components/onboarding/CollapsibleCard";
 import { Button } from "../ui/button";
 
 const formatEventName = (type: string) => {
@@ -30,7 +30,7 @@ const EventsCard = ({
   workspaceId: string;
   disabled: boolean;
 }) => {
-  const { data, refetch } = useEvents(workspaceId, false);
+  const { data, refetch } = useEvents(workspaceId, !disabled);
   const [testing, setTesting] = useState(false);
 
   const events = useMemo(() => {
