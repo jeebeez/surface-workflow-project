@@ -20,9 +20,9 @@ Minimal Next.js app with an events ingestion API and a simple dashboard API back
 DATABASE_URL="postgres://postgres:password@localhost:5432/surface_workflow"
 ```
 
-### Run locally
+### Steps to test
 
-Run these in order:
+- Clone the repo, and then run these in order:
 
 ```
 pnpm install
@@ -30,6 +30,12 @@ pnpm install
 pnpm db:push
 pnpm dev
 ```
+
+- With the app running (e.g., `http://localhost:3000`), open the dashboard, click `Install tag`, and copy the snippet.
+- Open `index.html` in the project root and paste the snippet inside the `<head></head>` tags. (Check `example.html` for reference)
+- Open `index.html` in your browser.
+- After the page loads, return to the dashboard and click `Test connection`.
+- On success, you'll see the `Next step` button. Click it to view events.
 
 Notes:
 
